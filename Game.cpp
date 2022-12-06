@@ -1,4 +1,4 @@
-#include <cmath>
+#include <string>
 #include "raylib.h"
 #include "Utils.cpp"
 #include "Paddle.cpp"
@@ -6,22 +6,24 @@
 
 const float	PADDLE_WIDTH = 20.0;
 const float	PADDLE_HEIGHT = 100.0;
-const float	PADDLE_SPEED = 500.0;
+const float	PADDLE_SPEED = 600.0;
 const Color	PADDLE_COLOR = WHITE;
 
 const float	BALL_RADIUS	= 5.0;
 const float BALL_SPEED_X = 300.0;
 const float BALL_SPEED_Y = 300.0;
-const float BALL_ACCELERATION = .2;
+const float BALL_ACCELERATION = 1.1;
 const Color	BALL_COLOR = WHITE;
 
-const float MAX_BOUNCE_ANGLE = 45.0;
+const s32 SCORE_TEXT_SIZE = 30;
+const Color TEXT_COLOR = WHITE;
 
 class Game {
 private:
 	u32 height, width;
 	Paddle player_one, player_two;
 	Ball ball;
+	u32 player_one_score = 0, player_two_score = 0;
 
 	void init_game() {
 		InitWindow(width, height, "Pong");
@@ -37,7 +39,7 @@ private:
 
 		Position ball_position = Position(GetScreenWidth() / 2, GetScreenHeight() / 2);
 
-		ball = Ball(ball_position, BALL_RADIUS, BALL_ACCELERATION, BALL_SPEED_X, BALL_SPEED_Y, BALL_COLOR);
+		ball = Ball(ball_position, BALL_RADIUS, BALL_SPEED_X, BALL_SPEED_Y, BALL_COLOR);
 
 		loop();
 	}
@@ -51,22 +53,22 @@ private:
 			Collisions between the paddles and the ball
 		*/
 		if (check_ball_paddle_collision(ball, player_one) && ball.get_speed_x() < 0) {
+			ball.change_speed_x(ball.get_speed_x() * -BALL_ACCELERATION);
+
 			float distance = player_one.get_position().x - ball.get_position().x;
 			float ratio = distance / (PADDLE_WIDTH / 2);
-			float bounceAngle = ratio * MAX_BOUNCE_ANGLE;
+			float bounceAngle = ratio * ball.get_speed_x();
 
-			ball.change_speed(BALL_SPEED_X * cos(bounceAngle), -(BALL_SPEED_Y * sin(bounceAngle)));
-
-			ball.increase_acceleration();
+			ball.change_speed_y(bounceAngle);
 		}
 		if (check_ball_paddle_collision(ball, player_two) && ball.get_speed_x() > 0) {
-			float distance = player_one.get_position().x - ball.get_position().x;
+			ball.change_speed_x(ball.get_speed_x() * -BALL_ACCELERATION);
+
+			float distance = player_two.get_position().x - ball.get_position().x;
 			float ratio = distance / (PADDLE_WIDTH / 2);
-			float bounceAngle = ratio * MAX_BOUNCE_ANGLE;
+			float bounceAngle = ratio * -ball.get_speed_x();
 
-			ball.change_speed(-(BALL_SPEED_X * cos(bounceAngle)), -(BALL_SPEED_Y * sin(bounceAngle)));
-
-			ball.increase_acceleration();
+			ball.change_speed_y(bounceAngle);
 		}
 
 		/*
@@ -74,13 +76,22 @@ private:
 		*/
 		if (ball.get_position().x - BALL_RADIUS <= 0) {
 			ball.change_position(Position(GetScreenWidth() / 2, GetScreenHeight() / 2));
-			ball.change_speed(-BALL_SPEED_X, BALL_SPEED_Y);
-			ball.reset_acceleration();
+			ball.change_speed_x(-BALL_SPEED_X);
+			ball.change_speed_y(BALL_SPEED_Y);
+			player_two_score++;
 		}
 		if (ball.get_position().x + BALL_RADIUS >= GetScreenWidth()) {
 			ball.change_position(Position(GetScreenWidth() / 2, GetScreenHeight() / 2));
-			ball.change_speed(BALL_SPEED_X, BALL_SPEED_Y);
-			ball.reset_acceleration();
+			ball.change_speed_x(BALL_SPEED_X);
+			ball.change_speed_y(BALL_SPEED_Y);
+			player_one_score++;
+		}
+
+		/*
+			Exit key
+		*/
+		if (IsKeyPressed(KEY_ESCAPE)) {
+			CloseWindow();
 		}
 	}
 	void loop() {
@@ -98,6 +109,13 @@ private:
 			player_two.render();
 
 			ball.render();
+
+			/*
+				Score
+			*/
+			std::string score;
+			score = std::to_string(player_one_score) + ":" + std::to_string(player_two_score);
+			DrawText(score.c_str(), GetScreenWidth() / 2 - MeasureText(score.c_str(), SCORE_TEXT_SIZE) / 2, 30, SCORE_TEXT_SIZE, TEXT_COLOR);
 
 		EndDrawing();
 	}
