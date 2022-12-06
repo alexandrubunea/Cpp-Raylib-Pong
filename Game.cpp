@@ -24,10 +24,14 @@ private:
 	Paddle player_one, player_two;
 	Ball ball;
 	u32 player_one_score = 0, player_two_score = 0;
+	Sound pong_sound;
 
 	void init_game() {
 		InitWindow(width, height, "Pong");
 		SetWindowState(FLAG_VSYNC_HINT);
+
+		InitAudioDevice();
+		pong_sound = LoadSound("pong.wav"); // https://freesound.org/people/NoiseCollector/sounds/4391/
 
 		Position player_one_position, player_two_position;
 
@@ -60,6 +64,8 @@ private:
 			float bounceAngle = ratio * ball.get_speed_x();
 
 			ball.change_speed_y(bounceAngle);
+
+			PlaySound(pong_sound);
 		}
 		if (check_ball_paddle_collision(ball, player_two) && ball.get_speed_x() > 0) {
 			ball.change_speed_x(ball.get_speed_x() * -BALL_ACCELERATION);
@@ -69,6 +75,8 @@ private:
 			float bounceAngle = ratio * -ball.get_speed_x();
 
 			ball.change_speed_y(bounceAngle);
+
+			PlaySound(pong_sound);
 		}
 
 		/*
@@ -99,6 +107,8 @@ private:
 			gameplay();
 			render();
 		}
+
+		CloseAudioDevice();
 	}
 	void render() {
 		BeginDrawing();
