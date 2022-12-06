@@ -3,12 +3,13 @@
 #include "Paddle.cpp"
 #include "Ball.cpp"
 
-#define		PADDLE_WIDTH	20
-#define		PADDLE_HEIGHT	100
-#define		PADDLE_COLOR	WHITE
+const float		PADDLE_WIDTH		= 20.0;
+const float		PADDLE_HEIGHT		= 100.0;
+const float		PADDLE_ACCELERATION = .3;
+const Color		PADDLE_COLOR		= WHITE;
 
-#define		BALL_RADIUS		5.0
-#define		BALL_COLOR		WHITE
+const float		BALL_RADIUS			= 5.0;
+const Color		BALL_COLOR			= WHITE;
 
 class Game {
 private:
@@ -25,8 +26,8 @@ private:
 		player_one_position = Position(PADDLE_WIDTH * 2, GetScreenHeight() / 2);
 		player_two_position = Position(GetScreenWidth() - PADDLE_WIDTH * 2, GetScreenHeight() / 2);
 
-		player_one = Paddle(player_one_position, PADDLE_WIDTH, PADDLE_HEIGHT, PADDLE_COLOR);
-		player_two = Paddle(player_two_position, PADDLE_WIDTH, PADDLE_HEIGHT, PADDLE_COLOR);
+		player_one = Paddle(player_one_position, PADDLE_WIDTH, PADDLE_HEIGHT, PADDLE_ACCELERATION, PADDLE_COLOR);
+		player_two = Paddle(player_two_position, PADDLE_WIDTH, PADDLE_HEIGHT, PADDLE_ACCELERATION, PADDLE_COLOR);
 
 		Position ball_position = Position(GetScreenWidth() / 2, GetScreenHeight() / 2);
 
@@ -36,20 +37,24 @@ private:
 	}
 	void loop() {
 		while (!WindowShouldClose()) {
-			BeginDrawing();
 
-				render();
+			player_one.controller(KEY_W, KEY_S);
+			player_two.controller(KEY_UP, KEY_DOWN);
 			
-			EndDrawing();
+			render();
 		}
 	}
 	void render() {
-		ClearBackground(BLACK);
+		BeginDrawing();
 
-		player_one.render();
-		player_two.render();
+			ClearBackground(BLACK);
 
-		ball.render();
+			player_one.render();
+			player_two.render();
+
+			ball.render();
+
+		EndDrawing();
 	}
 public:
 	Game(u32 Width, u32 Height) {
